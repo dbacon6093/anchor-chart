@@ -1,4 +1,8 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Anchor Chart Builder</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Inter:wght@400;500;600&display=swap">
@@ -48,6 +52,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .card h2 .pre{font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted);display:none;align-items:center;gap:6px}
 body.teacher .card h2 .pre{display:inline-flex}
 .hint{color:var(--muted);font-size:12.5px;margin:0}
+.hint a{color:var(--accent);font-weight:600}
+.foot{color:var(--muted);font-size:12.5px;text-align:center;padding-top:10px}
 .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
 .f{display:flex;flex-direction:column;gap:3px;min-width:0}
 .f>span{font-size:12px;font-weight:600;color:var(--muted)}
@@ -98,6 +104,9 @@ body.teacher .sonly{display:none}body.teacher .tonly{display:block}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.chip{transition:border-color .12s,background .12s}}
 </style>
+<style>body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
 <style id="paperCss"></style>
 
 <div class="wrap">
@@ -135,6 +144,7 @@ body.teacher .sonly{display:none}body.teacher .tonly{display:block}
 
       <section class="card tonly" id="teachCard">
         <h2>Setup code for students</h2>
+        <p class="hint"><a href="https://dbacon6093.github.io/anchor-chart/anchor-chart-quick-start.pdf" target="_blank" rel="noopener">Teacher quick start guide (PDF)</a></p>
         <p class="hint">Fill in the chart the way you want students to start. Tick what to include, then copy the code and post it for them. Fingerings fill in for each student unless you tick “Leave fingerings blank” in the pitch section. The key is sent as a concert key, so each student gets the key signature for their own instrument.</p>
         <div class="checks" id="preChecks"></div>
         <div class="checks">
@@ -232,6 +242,7 @@ body.teacher .sonly{display:none}body.teacher .tonly{display:block}
       <div class="stage"><div id="scaleBox"><div class="scaler"><div class="paper shadowbox" id="paper"></div></div></div></div>
     </div>
   </div>
+  <footer class="foot">© 2026 David Bacon</footer>
 </div>
 
 <script>
@@ -799,12 +810,16 @@ function renderLib(){
 }
 var DL=null;
 function fname(ext){return (S.title||'anchor-chart').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')+'-'+S.inst+'.'+ext}
+function saveFile(name,data,type,ok){
+ if(DL){DL.save({filename:name,data:data}).then(function(){say(ok)},dlErr);return}
+ try{var url=URL.createObjectURL(new Blob([data],{type:type}));var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},4000);say(ok)}catch(e){dlErr(e)}
+}
 function dlErr(e){if(e&&e.code==='declined')say('Download cancelled.');else say('The download could not start here.',true)}
 function dlHtml(){
  var doc='<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc((S.title||'Anchor chart')+' anchor chart')+'</title><style>@page{size:letter;margin:0}body{margin:0;background:#fff}'+PAPER_CSS+'</style></head><body><div class="paper">'+chartHTML()+'</div></body></html>';
- DL.save({filename:fname('html'),data:doc}).then(function(){say('Saved. Open the file in your browser, then print it or save it as a PDF.')},dlErr);
+ saveFile(fname('html'),doc,'text/html','Saved. Open the file in your browser, then print it or save it as a PDF.');
 }
-function dlJson(){DL.save({filename:fname('json'),data:JSON.stringify(S)}).then(function(){say('Backup saved. Use Open backup file to load it again.')},dlErr)}
+function dlJson(){saveFile(fname('json'),JSON.stringify(S),'application/json','Backup saved. Use Open backup file to load it again.')}
 
 /* ---------- wiring ---------- */
 function setMode(m){MODE=m;document.body.classList.toggle('teacher',m==='teacher');$('#mTeacher').checked=m==='teacher';$('#mStudent').checked=m==='student';try{localStorage.setItem('acb.mode',m)}catch(e){}syncKeyNote();updateCode()}
@@ -909,6 +924,7 @@ function init(){
  window.addEventListener('resize',fitScale);
  if(window.ResizeObserver)new ResizeObserver(fitScale).observe($('.stage'));
  try{
+  if(!window.claude){$('#bDlHtml').hidden=false;$('#bDlJson').hidden=false}
   var u=window.claude&&window.claude.use?window.claude.use('downloads'):null;
   if(u&&u.then)u.then(function(d){if(d){DL=d;$('#bDlHtml').hidden=false;$('#bDlJson').hidden=false}},function(){});
  }catch(e){}
@@ -918,4 +934,7 @@ init();
 })();
 </script>
 
-</body></html>
+<script data-goatcounter="https://anchorchart.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
