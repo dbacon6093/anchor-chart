@@ -528,10 +528,16 @@ function clefG(clef,sp,yb,x){var k=sp/250;
  if(clef==='bass')return '<path transform="translate('+(x+1)+' '+(yb-3*sp)+') scale('+k+' '+(-k)+')" d="'+FCLEF+'" fill="'+INK+'"/>';
  return '<path transform="translate('+x+' '+(yb-sp)+') scale('+k+' '+(-k)+')" d="'+GCLEF+'" fill="'+INK+'"/>';}
 function staffLines(x1,x2,yb,sp){var s='';for(var i=0;i<5;i++){var y=yb-i*sp;s+='<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+INK+'" stroke-width="1.1"/>'}return s}
+/* sharps, flats and naturals drawn as shapes so they sit exactly on their line or space (font glyphs do not) */
+function accG(t,x,y,sp){var k=sp/10,L=function(x1,y1,x2,y2,w){return '<line x1="'+(x+x1*k)+'" y1="'+(y+y1*k)+'" x2="'+(x+x2*k)+'" y2="'+(y+y2*k)+'" stroke="'+INK+'" stroke-width="'+(w*k)+'" stroke-linecap="butt"/>'};
+ if(t==='b')return L(0,-16,0,5,1.6)+'<path d="M'+x+' '+(y+5*k)+'C'+(x+10*k)+' '+(y+0.5*k)+' '+(x+9.5*k)+' '+(y-6.5*k)+' '+x+' '+(y-1.5*k)+'" stroke="'+INK+'" stroke-width="'+(2.1*k)+'" fill="none"/>';
+ if(t==='#')return L(2,-12,2,11,1.3)+L(7,-14,7,9,1.3)+L(-1,-2,10,-5.5,2.8)+L(-1,5.5,10,2,2.8);
+ if(t==='n')return L(0,-13,0,5,1.3)+L(7,-5,7,13,1.3)+L(0,-1,7,-3.5,2.8)+L(0,5,7,2.5,2.8);
+ return '';}
 function keySVG(clef,n){
  var pos=clef==='bass'?(n>0?[6,3,7,4,1,5,2]:[2,5,1,4,0,3,-1]):(n>0?[8,5,9,6,3,7,4]:[4,7,3,6,2,5,1]);
  var s=sv(140,72,'<g>'+staffLines(2,136,54,10)+clefG(clef,10,54,0)+(function(){var o='';
-  for(var i=0;i<Math.abs(n);i++){var y=54-pos[i]*5;o+='<text x="'+(38+i*12)+'" y="'+(y+9)+'" font-size="27" font-family="Georgia,serif" fill="'+INK+'">'+(n>0?'♯':'♭')+'</text>'}return o})()+'</g>');
+  for(var i=0;i<Math.abs(n);i++){var y=54-pos[i]*5;o+=accG(n>0?'#':'b',40+i*12,y,10)}return o})()+'</g>');
  return s;
 }
 function staffBox(){var sp=8,yb=64,top=12,bot=80;
@@ -545,7 +551,7 @@ function staffNoteSVG(p){
  for(var ls=-2;ls>=st;ls-=2) o+='<line x1="'+(cx-10)+'" y1="'+(yb-ls*sp/2)+'" x2="'+(cx+10)+'" y2="'+(yb-ls*sp/2)+'" stroke="'+INK+'" stroke-width="1.1"/>';
  for(var lu=10;lu<=st;lu+=2) o+='<line x1="'+(cx-10)+'" y1="'+(yb-lu*sp/2)+'" x2="'+(cx+10)+'" y2="'+(yb-lu*sp/2)+'" stroke="'+INK+'" stroke-width="1.1"/>';
   var da=effAcc(p);
- if(da) o+='<text x="'+(cx-17)+'" y="'+(y+8)+'" font-size="22" font-family="Georgia,serif" fill="'+INK+'">'+ASYM[da]+'</text>';
+ if(da) o+=accG(da,cx-17,y,sp);
  o+='<ellipse cx="'+cx+'" cy="'+y+'" rx="5.6" ry="4" fill="'+INK+'" transform="rotate(-20 '+cx+' '+y+')"/>';
  if(st<4) o+='<line x1="'+(cx+5.2)+'" y1="'+(y-1)+'" x2="'+(cx+5.2)+'" y2="'+(y-26)+'" stroke="'+INK+'" stroke-width="1.5"/>';
  else o+='<line x1="'+(cx-5.2)+'" y1="'+(y+1)+'" x2="'+(cx-5.2)+'" y2="'+(y+26)+'" stroke="'+INK+'" stroke-width="1.5"/>';
